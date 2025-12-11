@@ -1,42 +1,30 @@
 package grpc
 
 import (
-	"context"
 	"log"
 	"net"
+	"microservice-order/internal/application/core/api"
 
-	pb "github.com/SEU_USUARIO/microservices-proto/golang/payment"
-	"microservice-payment/internal/service"
+	pb "github.com/SEU_USUARIO/microservices-proto/golang/order"
 	"google.golang.org/grpc"
 )
 
 type Adapter struct {
+	app *api.Application
 	port string
-	svc  *service.PaymentService
-	pb.UnimplementedPaymentServer
+	pb.UnimplementedOrderServiceServer
 }
 
-func NewAdapter(port string, svc *service.PaymentService) *Adapter {
-	return &Adapter{port: port, svc: svc}
-}
-
-func (a *Adapter) Create(ctx context.Context, req *pb.CreatePaymentRequest) (*pb.CreatePaymentResponse, error) {
-	p, err := a.svc.Create(req.UserId, req.OrderId, req.TotalPrice)
-	if err != nil { return nil, err }
-
-	return &pb.CreatePaymentResponse{
-		PaymentId: p.ID,
-		BillId:    p.BillID,
-	}, nil
+func NewAdapter(app *api.Application, port string) *Adapter {
+	return &Adapter{app: app, port: port}
 }
 
 func (a *Adapter) Run() {
 	lis, err := net.Listen("tcp", a.port)
-	if err != nil { log.Fatalf("Listen error: %v", err) }
+	if err != nil { log.Fatalf("Error: %v", err) }
 
 	server := grpc.NewServer()
-	pb.RegisterPaymentServer(server, a)
-
-	log.Printf("Payment service running on %s", a.port)
+	pb.RegisterOrderServiceServer(server, a)
+	log.Printf("Order running %s", a.port)
 	server.Serve(lis)
 }

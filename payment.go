@@ -1,9 +1,7 @@
-package domain
+package ports
 
-type Payment struct {
-	ID      int64 `gorm:"primaryKey"`
-	OrderID int64
-	UserID  int64
-	Total   float32
-	BillID  int64
+import "microservice-order/internal/application/core/domain"
+
+type PaymentPort interface {
+	Charge(*domain.Order) error
 }
